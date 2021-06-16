@@ -7,10 +7,12 @@ class HillClimbNeightborAlgorithm(BaseAlgorithm):
                  end_curr_idx,
                  num_currs,
                  rates_data,
+                 random_state,
+                 next_state_method="all",
                  num_iterations=420,
                  num_neighbors=2,
                  depth=2):
-        super().__init__(begin_curr_idx, end_curr_idx, num_currs, rates_data)
+        super().__init__(begin_curr_idx, end_curr_idx, num_currs, rates_data, random_state, next_state_method)
         self.num_iterations = num_iterations
         self.num_neighbors = num_neighbors
         self.depth = depth
@@ -29,7 +31,7 @@ class HillClimbNeightborAlgorithm(BaseAlgorithm):
             for i in range(self.depth):
                 for j in range(idx, len(tab_state)):
                     for k in range(self.num_neighbors):
-                        new_state = self.new_state(list(tab_state[j]))
+                        new_state = self.next_state(list(tab_state[j]))
                         tab_state.append(new_state)
 
                     idx += 1

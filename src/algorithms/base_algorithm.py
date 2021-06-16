@@ -1,24 +1,29 @@
 from abc import ABC, abstractmethod
-
+from typing import List
 import numpy as np
+
+
+from collections import Counter
 
 
 class BaseAlgorithm(ABC):
 
 
-    def __init__(self, begin_curr_idx, end_curr_idx, num_currs, rates_data):
+    def __init__(self, begin_curr_idx, end_curr_idx, num_currs, rates_data, random_state, next_state_method="modify"):
 
         self.begin_curr_idx = begin_curr_idx
         self.end_curr_idx = end_curr_idx
         self.num_currs = num_currs
         self.rates = rates_data
+        self.next_state_method = next_state_method
+        self.random_state = random_state
 
     def init_state(self, shuffling=True):
 
         state = [curr_num for curr_num in range(self.num_currs)]
 
         if shuffling:
-            np.random.shuffle(state)
+            self.random_state.shuffle(state)
 
         # beginning currency number on the first position
         # ending currency number on the last position
@@ -37,6 +42,7 @@ class BaseAlgorithm(ABC):
         return state
 
 
+
     def calc_price(self, state: list):
 
         """
@@ -50,68 +56,124 @@ class BaseAlgorithm(ABC):
         return price
 
 
-    def next_state_big(self, state: list):
+    def next_state(self, current_state: list):
 
-        prob = np.random.uniform()
+        next_state = current_state.copy()
 
-        if prob < 0.333:    # TODO: bug for big states???
-            temp = state[1: -1]
-            np.shuffle(temp)
-            next_state = [state[0]] + temp + [state[-1]]
-        elif prob < 0.666:     # removing random number of currencies, but less than len // 2
+        if self.next_state_method == "shuffle":
+            next_state = self.shuffle_state(next_state)
+        elif self.next_state_method == "swap":
+            next_state = self.make_swap(next_state)
+        elif self.next_state_method == "add":
+            next_state = self.add_item(next_state)
+        elif self.next_state_method == "all":
+            next_state = self.next_state_combined(next_state)
 
-            num_currs_to_remove = np.random.randint(1, len(state // 2))
-            for i in range(num_currs_to_remove):
-                idx = np.random.randint(1, len(state) - 2)
-                del state[idx]
-
-        else:   # Random number of swaps
-
-            num_swaps = np.random.randint(1, len(state) // 4)
-            for i in range(num_swaps):
-                idx1, idx2 = np.random.randint(1, len(state - 2)), np.random.randint(1, len(state) - 2)
-                state[idx1], state[idx2] = state[idx2], state[idx1]
-
-        return state
+        return next_state
 
 
-    def next_state_small(self, state: list):
 
-        prob = np.random.uniform()
+    def next_state_combined(self, state: list):
 
-        if prob < 0.333 and len(state) >= 4:    # random swap
-            idx1, idx2 = np.random.randint(1, len(state) - 2), np.random.randint(1, len(state) - 2)
-
-            while idx1 == idx2:
-                idx2 = np.random.randint(1, len(state) - 2)
-            state[idx1] , state[idx2] = state[idx2], state[idx1]
-
-        elif prob < 0.666 and len(state) > 2:
-            idx = np.random.randint(1, len(state) - 2)
-            del state[idx]
-
-        elif len(state) != self.num_currs:
-            temp = [x for x in range(self.num_currs)]
-            for item in state:
-                temp[item] = -1
-            temp2 = []
-            for elem in temp:
-                if elem != -1:
-                    temp2.append(elem)
-
-            idx1 = np.random.randint(0, len(temp2) - 1)
-            idx2 = np.random.randint(1, len(state) - 1)
-
-            state.insert(idx2, temp2[idx1])
-
-        return state
+        prob = self.random_state.uniform(0, 1)
+        if prob <= 0.25:
+            return self.shuffle_state(state.copy())
+        elif prob <= 0.5:
+            return self.make_swap(state.copy())
+        elif prob <= 0.75:
+            return self.add_item(state.copy())
+        else:
+            return self.remove_item(state.copy())
 
 
-    def next_state(self, state: list):
-        return self.next_state_small(state) if len(state) < 10 else self.next_state_big(state)
+    def shuffle_state(self, state: list):
 
-    def find_best(self, states: list[list]):
+        if len(state) <= 3:
+            return state
+
+        part_to_shuffle = state[1:-1]
+        self.random_state.shuffle(part_to_shuffle)
+
+        result = [state[0]] + part_to_shuffle + [state[-1]]
+
+        return result
+
+
+    def make_swap(self, state: list):
+
+        if len(state) <= 3:
+            return state
+
+        part_to_swap = state[1: -1]
+
+        # random
+        indexes = self.random_state.randint(len(state) - 2, size=2)
+        index_left, index_right = np.min(indexes), np.max(indexes)
+
+        part_to_swap[index_left], part_to_swap[index_right] = part_to_swap[index_right], part_to_swap[index_left]
+
+        return [state[0]] + part_to_swap + [state[-1]]
+
+
+    def remove_item(self, state: list):
+
+        if len(state) <= 2:
+            return state
+
+        part_to_remove_from = state[1: -1]
+        index = self.random_state.randint(len(state) - 2)
+        part_to_remove_from.pop(index)
+
+        new_state = [state[0]] + part_to_remove_from + [state[-1]]
+        new_state = self.remove_cycles(new_state)
+
+        return new_state
+
+
+    def add_item(self, state: list):
+
+        if len(state) <= 2:
+            return state
+
+        index_to_add = self.random_state.randint(1, len(state) - 1)
+
+        new_value = self.random_state.randint(self.num_currs)
+        new_state = self.remove_cycles(state[:index_to_add] + [new_value] + state[index_to_add:])
+
+        return new_state
+
+
+    def remove_cycles(self, state: list):
+
+        new_state = []
+        outter_count = 0
+        while outter_count < len(state):
+            found = False
+
+            inner_count = outter_count + 1
+            while inner_count < len(state):
+
+                if state[outter_count] == state[inner_count]:
+                    found = True
+                    new_state.append(state[inner_count])
+                    outter_count = inner_count
+                    break
+
+                inner_count += 1
+
+            if not found:
+                new_state.append(state[outter_count])
+
+            outter_count += 1
+
+        return new_state
+
+
+
+    def find_best(self, states: List[list]):
+
         assert len(states) >= 1
+
         best_state = states[0]
         best_score = (-1) * float("inf")
 
@@ -121,6 +183,7 @@ class BaseAlgorithm(ABC):
                 best_score = self.calc_price(state)
 
         return best_state
+
 
     @abstractmethod
     def optimize(self):

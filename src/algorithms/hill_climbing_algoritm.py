@@ -7,9 +7,12 @@ class HillClimbingAlgorithm(BaseAlgorithm):
                  end_curr_idx,
                  num_currs,
                  rates_data,
+                 random_state,
+                 next_state_method="all",
                  num_iterations=100):
-        super().__init__(begin_curr_idx, end_curr_idx, num_currs, rates_data)
+        super().__init__(begin_curr_idx, end_curr_idx, num_currs, rates_data, random_state, next_state_method)
         self.num_iterations = num_iterations
+        self.random_state = random_state
 
     def optimize(self):
 
