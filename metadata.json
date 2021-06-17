@@ -1,0 +1,31 @@
+AStar
+  Różne zestawy danych
+  Różne mutacje stanu
+
+
+Ewolucyjny
+  Różne mutacje stanu
+  Różne zestawy danych
+  Różne rodzaje selekcji
+  Różne liczby iteracji
+  Różna wielkość populacji
+
+
+Wspinaczkowy
+  Różne mutacje stanu
+  Różne zestawy danych
+  Liczba iteracji
+
+Wspinaczkowy ze zmiennym sąsiedztwem
+  Różne zestawy danych
+  Liczba sąsiadów
+  Liczba na ile w głąb
+  Liczba iteracji
+  Różne mutacje stanu
+
+Symulowane wyżarzanie
+  Różne zestawy danych
+  Różne mutacje stanu
+  Temperatura (heat)
+  Wielkość populacji
+  Liczba iteracji
