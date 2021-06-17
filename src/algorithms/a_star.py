@@ -9,10 +9,8 @@ class AStar(BaseAlgorithm):
                  begin_curr_idx,
                  end_curr_idx,
                  num_currs,
-                 rates_data,
-                 random_state,
-                 next_state_method="all"):
-        super().__init__(begin_curr_idx, end_curr_idx, num_currs, rates_data, random_state, next_state_method)
+                 rates_data):
+        super().__init__(begin_curr_idx, end_curr_idx, num_currs, rates_data, random_state=None)
 
         self.queue = PriorityQueue()
 
@@ -26,7 +24,6 @@ class AStar(BaseAlgorithm):
             self.heuristic(self.begin_curr_idx)
         )))
 
-        best_state, best_cost = None, None
         while not self.queue.empty():
             node = self.queue.get()[1]
 

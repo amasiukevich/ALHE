@@ -1,5 +1,5 @@
 import numpy as np
-
+import pandas as pd
 
 def load_rates(filename):
     rates = []
@@ -18,3 +18,10 @@ def save_rates(rates, filename):
     with open(filename, "w") as currs_file:
         for t in rates:
             currs_file.write(f'{" ".join([str(elem) for elem in t])}\n')
+
+def load_csv(filename):
+
+    data = pd.read_csv(filename, sep=";").values
+    data = [list([float(elem) for elem in data_chunk[0].split(",")]) for data_chunk in data]
+
+    return data, len(data)
