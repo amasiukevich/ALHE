@@ -51,7 +51,10 @@ class BaseAlgorithm(ABC):
         """
         price = 1
         for i in range(len(state) - 1):
-            price *= self.rates[ state[i] ][ state[i + 1] ]
+            try:
+                price *= self.rates[ state[i] ][ state[i + 1] ]
+            except:
+                breakpoint()
 
         return price
 
