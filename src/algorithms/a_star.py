@@ -26,9 +26,13 @@ class AStar(BaseAlgorithm):
             self.heuristic(self.begin_curr_idx)
         )))
 
+        best_state, best_cost = None, None
         while not self.queue.empty():
             node = self.queue.get()[1]
+
             if node.is_invalid():
+                continue
+            if node.is_acceptable(self.end_curr_idx):
                 return node.history, node.cost
 
             for i in range(len(self.rates)):

@@ -11,11 +11,13 @@ class Node:
             self.history = [new_curr]
             self.cost = rate
             self.value = rate * heur
+            return
         else:
             self.history = list(old_obj.history)
             self.history.append(new_curr)
             self.cost = old_obj.cost * rate
             self.value = self.cost * heur
+            return
 
     def push_back(self, new_curr, rate, heuristic):
 
@@ -27,8 +29,14 @@ class Node:
         return self.history[-1] == fin
 
     def is_invalid(self):
-        last_in_history = self.history[-1]
-        return any([elem == last_in_history for elem in self.history])
+
+        for i in range(len(self.history) - 1):
+            if self.history[i] == self.history[-1]:
+                return True
+        return False
+        # last_in_history = self.history[-1]
+        #
+        # return any([elem == last_in_history for elem in self.history[:-1]])
 
     def get_history(self):
         return np.array(self.history)

@@ -26,12 +26,12 @@ def test_algorithms():
 
     random_seeds = [42]
 
-    selection_ways = [ "threshold", "tournament", "roulette"]
+    selection_ways = ["tournament", "roulette", "threshold"]
     mutation_ways = ["shuffle", "swap", "add", "all"]
 
-    num_iterations = [10, 50, 100, 200, 500, 1000]
+    num_iterations = [10, 50, 100, 200, 500]
     temperatures = [1, 2, 3, 5, 8, 13, 21]
-    population_sizes = [2, 5, 10, 20, 50, 100]
+    population_sizes = [5, 10, 20, 50, 100]
 
     num_neighbors = [1, 2, 3, 4]
     depths = [1, 2, 3]
@@ -72,7 +72,10 @@ def test_algorithms():
                             )
                             i += 1
                             best_state, best_result = algo.optimize()
-                            print(i)
+
+                            if i % 100 == 0:
+                                print(i)
+
                             annealing_data.append({
                                 "source": number,
                                 "mutation_method": state_mutation,
@@ -116,50 +119,55 @@ def test_algorithms():
                 })
 
 
-    # print("Testing evolutionary")
-    #
-    # i = 0
-    # # evolutionary
-    # for number, source_data in data_sources.items():
-    #
-    #     filename = source_data[0]
-    #     begin, end = source_data[1], source_data[2]
-    #
-    #     rates, num_currs = load_rates(filename)
-    #     for selection_way in selection_ways:
-    #         for state_mutation in mutation_ways:
-    #             for num_iteration in num_iterations:
-    #                 for population_size in population_sizes:
-    #                     for random_seed in random_seeds:
-    #
-    #                         random_state = RandomState(random_seed)
-    #
-    #                         evol = EvolAlgorithm(
-    #                             begin_curr_idx=begin,
-    #                             end_curr_idx=end,
-    #                             num_currs=num_currs,
-    #                             rates_data=rates,
-    #                             next_state_method=state_mutation,
-    #                             num_iterations=num_iteration,
-    #                             population_size=population_size,
-    #                             selection_type=selection_way,
-    #                             random_state=random_state
-    #                         )
-    #
-    #                         best_state, best_score = evol.optimize()
-    #                         i += 1
-    #                         print(i)
-    #                         evol_data.append({
-    #                             "source": number,
-    #                             "mutation_method": state_mutation,
-    #                             "num_iterations": num_iterations,
-    #                             "population_size": population_size,
-    #                             "selection_type": selection_way,
-    #                             "best_state": best_state,
-    #                             "best_score": best_score
-    #                         })
-    #
-    # print("Testing hill climbing")
+    print("Testing evolutionary")
+
+    i = 0
+    # evolutionary
+    for number, source_data in data_sources.items():
+
+        filename = source_data[0]
+        begin, end = source_data[1], source_data[2]
+
+        rates, num_currs = load_rates(filename)
+        for selection_way in selection_ways:
+            for state_mutation in mutation_ways:
+                for num_iteration in num_iterations:
+                    for population_size in population_sizes:
+                        for random_seed in random_seeds:
+
+                            random_state = RandomState(random_seed)
+
+
+                            evol = EvolAlgorithm(
+                                begin_curr_idx=begin,
+                                end_curr_idx=end,
+                                num_currs=num_currs,
+                                rates_data=rates,
+                                next_state_method=state_mutation,
+                                num_iterations=num_iteration,
+                                population_size=population_size,
+                                selection_type=selection_way,
+                                random_state=random_state
+                            )
+
+
+                            best_state, best_score = evol.optimize()
+                            i += 1
+                            print(i)
+
+                            metadata = {
+                                "source": number,
+                                "mutation_method": state_mutation,
+                                "num_iterations": num_iteration,
+                                "population_size": population_size,
+                                "selection_type": selection_way,
+                                "best_state": best_state,
+                                "best_score": best_score
+                            }
+                            print(metadata)
+                            evol_data.append(metadata)
+
+    print("Testing hill climbing")
 
     # hill_climbing
     for number, source_data in data_sources.items():
