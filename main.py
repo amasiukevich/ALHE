@@ -1,7 +1,7 @@
 # Getting data
 from numpy.random import RandomState
 
-from src.utils.data_loader import load_rates
+from src.utils.data_loader import load_rates, load_csv
 
 # Algorithms
 
@@ -23,6 +23,10 @@ def test_algorithms():
         1: ("data/data3_small.txt", 1, 4),
         2: ("data/paths_prepared.txt", 3, 5)
     }
+
+    # data_sources = {
+    #     3: ("data/true_data1.csv", 1, 4)
+    # }
 
     random_seeds = [42]
 
@@ -95,28 +99,20 @@ def test_algorithms():
         begin, end = source_data[1], source_data[2]
 
         rates, num_currs = load_rates(filename)
+        algo = AStar(
+            begin_curr_idx=begin,
+            end_curr_idx=end,
+            num_currs=num_currs,
+            rates_data=rates,
+        )
 
-        for state_mutation in mutation_ways:
+        best_state, best_result = algo.optimize()
 
-            for random_seed in random_seeds:
-                random_state = RandomState(random_seed)
-                algo = AStar(
-                    begin_curr_idx=begin,
-                    end_curr_idx=end,
-                    num_currs=num_currs,
-                    rates_data=rates,
-                    random_state=random_state,
-                    next_state_method=state_mutation
-                )
-
-                best_state, best_result = algo.optimize()
-
-                a_star_data.append({
-                    "source": number,
-                    "mutation_method": state_mutation,
-                    "best_state": best_state,
-                    "best_score": best_result
-                })
+        a_star_data.append({
+            "source": number,
+            "best_state": best_state,
+            "best_score": best_result
+        })
 
 
     print("Testing evolutionary")
@@ -250,10 +246,10 @@ def test_algorithms():
     annealing_df = pd.DataFrame(annealing_data)
 
     a_star_df.to_csv("result_data/a_star_data.csv")
-    evol_df.to_csv("result_data/evol_data.csv")
-    climbing_df.to_csv("result_data/climbing_data.csv")
-    climbing_neighbor_df.to_csv("result_data/climbing_neighbor_data.csv")
-    annealing_df.to_csv("result_data/annealing_data.csv")
+    evol_df.to_csv("results_api/evol_data.csv")
+    climbing_df.to_csv("results_api/climbing_data.csv")
+    climbing_neighbor_df.to_csv("results_api/climbing_neighbor_data.csv")
+    annealing_df.to_csv("results_api/annealing_data.csv")
 
 
 if __name__ == "__main__":
